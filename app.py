@@ -4,38 +4,44 @@ import streamlit as st
 import openai
 from brain import get_index_for_pdf
 from langchain.chains import RetrievalQA
-# from langchain.chat_models import ChatOpenAI
-from langchain_community.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI  # For chat models
 import openai
 import os
 
 # Set the title for the Streamlit app
 st.title("RAG enhanced Chatbot")
 
-openai.api_key = st.secrets["api_key"]
+# Set up the OpenAI API key (replace with your API key)
+openai.api_key = st.secrate["api_key"]
 
-# Cached function to create a vectordb for the provided PDF files
-# @st.cache_data
+# Cached function to create a vectordb for the provided PDF and DOCX files
 @st.cache_resource   
 def create_vectordb(files, filenames):
-    # Show a spinner while creating the vectordb
-    with st.spinner("Vector database"):
+    """
+    Creates a vector database from the uploaded files.
+    Args:
+        files (List[BytesIO]): A list of uploaded files as byte streams.
+        filenames (List[str]): A list of corresponding filenames.
+    Returns:
+        FAISS: The created FAISS vector index.
+    """
+    with st.spinner("Creating vector database..."):
         vectordb = get_index_for_pdf(
             [file.getvalue() for file in files], filenames, openai.api_key
         ) 
     return vectordb
 
 
-# Upload PDF files using Streamlit's file uploader
-# Provide a meaningful label and use label_visibility if you wish to hide it visually
+# Upload PDF and DOCX files (collapsed for cleaner UI)
 pdf_files = st.file_uploader("Upload PDF Files", type=["pdf", "docx"], accept_multiple_files=True, label_visibility="collapsed")
 
-# If PDF files are uploaded, create the vectordb and store it in the session state
+# Create the vector database if files are uploaded
 if pdf_files:
     pdf_file_names = [file.name for file in pdf_files]
     st.session_state["vectordb"] = create_vectordb(pdf_files, pdf_file_names)
 
 
+# Define the prompt template for the LLM
 prompt_template = """
 You are an expert market researcher with 20 years of experience. For the last 10 years you have been doing research in the middle east region to understand consumer sentiment. 
 
@@ -52,7 +58,7 @@ Reply "Not applicable" if text is irrelevant.
 Carefully focus on the metadata specially 'filename' and 'page' whenever answering.
 """
 
-# Get the current prompt from the session state or set a default value
+# Get the current prompt from the session state or set a default
 prompt = st.session_state.get("prompt", [{"role": "system", "content": "none"}])
 
 # Display previous chat messages
@@ -69,25 +75,23 @@ if question:
     vectordb = st.session_state.get("vectordb", None)
     if not vectordb:
         with st.chat_message("assistant"):
-            st.write("You need to provide a PDF")
+            st.write("You need to provide a PDF or DOCX file first.")
             st.stop()
 
     # Search the vectordb for similar content to the user's question
     search_results = vectordb.similarity_search(question, k=5)
-    # search_results
     pdf_extract = "/n ".join([result.page_content for result in search_results])
 
-    # Update the prompt with the pdf extract
+    # Update the prompt with the pdf extract and user question
     prompt[0] = {
         "role": "system",
         "content": prompt_template.format(pdf_extract=pdf_extract),
     }
-
-    # Add the user's question to the prompt and display it
     prompt.append({"role": "user", "content": question})
+
+    # Display the user's question
     with st.chat_message("user"):
         st.write(question)
-
 
     # Display an empty assistant message while waiting for the response
     with st.chat_message("assistant"):
@@ -106,10 +110,6 @@ if question:
             botmsg.write(result)
 
     # Add the assistant's response to the prompt
-    # prompt.append({"role": "assistant", "content": result})
-
-    # Store the updated prompt in the session state
-    st.session_state["prompt"] = prompt
     prompt.append({"role": "assistant", "content": result})
 
     # Store the updated prompt in the session state
