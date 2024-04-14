@@ -11,7 +11,10 @@ import os
 # Set the title for the Streamlit app
 st.title("RAG enhanced Chatbot")
 
-# Set up the OpenAI API key (replace with your API key)
+#if you want to use api_key directly
+# openai.api_key = "api_key"
+
+# Set up the OpenAI API key (API key is set in streamlit secrate)
 openai.api_key = st.secrate["api_key"]
 
 # Cached function to create a vectordb for the provided PDF and DOCX files
