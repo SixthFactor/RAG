@@ -11,6 +11,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
 from pypdf import PdfReader
+from docx import Document as DocxDocument
 import faiss
 
 
@@ -25,6 +26,11 @@ def parse_pdf(file: BytesIO, filename: str) -> Tuple[List[str], str]:
         output.append(text)
     return output, filename
 
+# for doxc
+def parse_docx(file: BytesIO, filename: str) -> Tuple[List[str], str]:
+    doc = DocxDocument(file)
+    output = [paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip()]
+    return output, filename
 
 def text_to_docs(text: List[str], filename: str) -> List[Document]:
     if isinstance(text, str):
@@ -36,9 +42,9 @@ def text_to_docs(text: List[str], filename: str) -> List[Document]:
     doc_chunks = []
     for doc in page_docs:
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=4000,
+            chunk_size=400,
             separators=["\n\n", "\n", ".", "!", "?", ",", " ", ""],
-            chunk_overlap=200,
+            chunk_overlap=20,
         )
         chunks = text_splitter.split_text(doc.page_content)
         for i, chunk in enumerate(chunks):
@@ -56,11 +62,24 @@ def docs_to_index(docs, openai_api_key):
     return index
 
 
-def get_index_for_pdf(pdf_files, pdf_names, openai_api_key):
+# def get_index_for_pdf(pdf_files, pdf_names, openai_api_key):
+#     documents = []
+#     for pdf_file, pdf_name in zip(pdf_files, pdf_names):
+#         text, filename = parse_pdf(BytesIO(pdf_file), pdf_name)
+#         documents = documents + text_to_docs(text, filename)
+#     index = docs_to_index(documents, openai_api_key)
+#     return index
+
+def get_index_for_pdf(pdf_and_docx_files, pdf_and_docx_names, openai_api_key):
     documents = []
-    for pdf_file, pdf_name in zip(pdf_files, pdf_names):
-        text, filename = parse_pdf(BytesIO(pdf_file), pdf_name)
-        documents = documents + text_to_docs(text, filename)
+    for file, name in zip(pdf_and_docx_files, pdf_and_docx_names):
+        if name.lower().endswith('.pdf'):
+            text, filename = parse_pdf(BytesIO(file), name)
+        elif name.lower().endswith('.docx'):
+            text, filename = parse_docx(BytesIO(file), name)
+        else:
+            continue  # Skip files with unsupported extensions
+        documents += text_to_docs(text, filename)
+    
     index = docs_to_index(documents, openai_api_key)
     return index
-
