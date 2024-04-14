@@ -61,15 +61,6 @@ def docs_to_index(docs, openai_api_key):
     index = FAISS.from_documents(docs, OpenAIEmbeddings(openai_api_key=openai_api_key))
     return index
 
-
-# def get_index_for_pdf(pdf_files, pdf_names, openai_api_key):
-#     documents = []
-#     for pdf_file, pdf_name in zip(pdf_files, pdf_names):
-#         text, filename = parse_pdf(BytesIO(pdf_file), pdf_name)
-#         documents = documents + text_to_docs(text, filename)
-#     index = docs_to_index(documents, openai_api_key)
-#     return index
-
 def get_index_for_pdf(pdf_and_docx_files, pdf_and_docx_names, openai_api_key):
     documents = []
     for file, name in zip(pdf_and_docx_files, pdf_and_docx_names):
