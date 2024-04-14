@@ -12,10 +12,6 @@ import os
 # Set the title for the Streamlit app
 st.title("RAG enhanced Chatbot")
 
-# Set up the OpenAI API key from databutton secrets
-# os.environ["OPENAI_API_KEY"] = db.secrets.get("OPENAI_API_KEY")
-# openai.api_key = db.secrets.get("OPENAI_API_KEY")
-
 openai.api_key = st.secrets["api_key"]
 
 # Cached function to create a vectordb for the provided PDF files
@@ -31,7 +27,6 @@ def create_vectordb(files, filenames):
 
 
 # Upload PDF files using Streamlit's file uploader
-# pdf_files = st.file_uploader("", type="pdf", accept_multiple_files=True)
 # Provide a meaningful label and use label_visibility if you wish to hide it visually
 pdf_files = st.file_uploader("Upload PDF Files", type=["pdf", "docx"], accept_multiple_files=True, label_visibility="collapsed")
 
