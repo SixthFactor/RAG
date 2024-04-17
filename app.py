@@ -15,7 +15,7 @@ st.title("RAG enhanced Chatbot")
 # openai.api_key = "api_key"
 
 # Set up the OpenAI API key (API key is set in streamlit secrate)
-openai.api_key = st.secrate["api_key"]
+openai.api_key = st.secrets["api_key"]
 
 # Cached function to create a vectordb for the provided PDF and DOCX files
 @st.cache_resource   
