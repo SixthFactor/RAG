@@ -5,7 +5,6 @@ import openai
 from brain import get_index_for_pdf
 from langchain.chains import RetrievalQA
 from langchain_community.chat_models import ChatOpenAI  # For chat models
-import openai
 import os
 
 # Set the title for the Streamlit app
