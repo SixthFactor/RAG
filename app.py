@@ -56,7 +56,7 @@ When providing the consumer quotes please label them with appropriate labels bas
 Please refer to all the files for information when you answer to the query. Please be professional and courteous when answering these queries.
 The PDF content is:
 {pdf_extract}
-Reply "Not applicable" if text is irrelevant.
+
 Carefully focus on the metadata specially 'filename' and 'page' whenever answering.
 """
 
